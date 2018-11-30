@@ -47,7 +47,7 @@ def plotWithCosts(num_iterations, costList, is_batch_comparision=True, net_dims=
     # here plot our results where our x axis would be the 1 to no. of iteration with interval of 10
     # y axis would be costs list for training and validation set
 
-    iterations = [i for i in range(0, num_iterations, 10)];
+    iterations = [i for i in range(0, num_iterations, 1)];
     for key in costList:
         label = "";
         if is_batch_comparision:
@@ -58,4 +58,3 @@ def plotWithCosts(num_iterations, costList, is_batch_comparision=True, net_dims=
     plt.legend();
     plt.title("Training errors for %s dimensions multi layer neurons" % str(net_dims[:len(net_dims) - 1]));
     plt.show();
-    print("Hogata")

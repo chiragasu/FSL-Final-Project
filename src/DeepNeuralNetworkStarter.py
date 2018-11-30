@@ -236,7 +236,8 @@ def classify(X, parameters, lables, onlyPred=False):
     return Ypred, loss;
 
 
-def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.01, descent_optimization_type=0, momentumParams={}):
+def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.01, descent_optimization_type=0,
+                      momentumParams={}, t=0):
     '''
     Updates the network parameters with gradient descent
 
@@ -256,29 +257,30 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
     # Once the required slopes of W and b are found the update
     # we update the value W and b and continue till the required iterations are completed
 
-
     for l in range(1, L + 1):
         dw_update = gradients["dW" + str(l)];
         db_update = gradients["db" + str(l)];
         if descent_optimization_type == 1:
-            dw_update, db_update = PU.polyUpdateParams(momentumParams["mtw" + str(l)], momentumParams["mtb" + str(l)], dw_update, db_update);
+            dw_update, db_update = PU.polyUpdateParams(momentumParams["mtw" + str(l)], momentumParams["mtb" + str(l)],
+                                                       dw_update, db_update, t);
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 2:
-            dw_update, db_update = NU.NestrovUpdateParams(momentumParams["mtw" + str(l)], momentumParams["mtb" + str(l)],
-                                                       dw_update, db_update);
+            dw_update, db_update = NU.NestrovUpdateParams(momentumParams["mtw" + str(l)],
+                                                          momentumParams["mtb" + str(l)],
+                                                          dw_update, db_update);
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 3:
             dw_update, db_update = AU.adamUpdateParams(momentumParams["mtw" + str(l)],
-                                                          momentumParams["mtb" + str(l)],
-                                                          dw_update, db_update);
+                                                       momentumParams["mtb" + str(l)],
+                                                       dw_update, db_update);
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 4:
             dw_update, db_update = RPU.rmsPropUpdateParams(momentumParams["mtw" + str(l)],
-                                                          momentumParams["mtb" + str(l)],
-                                                          dw_update, db_update);
+                                                           momentumParams["mtb" + str(l)],
+                                                           dw_update, db_update);
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         parameters["W" + str(l)] = parameters["W" + str(l)] - alpha * dw_update;
@@ -313,6 +315,7 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
         # This consists for starting from Ao i.e X
         # and evalute till AL
         # keep hold of cache to be used later in backpropagation step
+        X , Y = UF.unison_shuffled_copies(X.T, Y.T);
         cost = classify(X, parameters, Y)[1];
         for i in range(0, len(A0.T), batch_size):
             # print("batch " + str(i));
@@ -331,11 +334,12 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
             # call to multi_layer_backward to get gradients
             # call to update the parameters
             gradients = multi_layer_backward(dZ, caches, parameters);
-            parameters, alpha = update_parameters(parameters, gradients, ii, learning_rate, decay_rate, );
-        if ii % 10 == 0:
-            costs.append(cost);
-        if ii % 10 == 0:
-            print("Cost for training at iteration %i is: %.05f, learning rate: %.05f" % (ii, cost, alpha))
+            parameters, alpha = update_parameters(parameters, gradients, ii, learning_rate, decay_rate,
+                                                  momentumParams=momentumparams,
+                                                  descent_optimization_type=descent_optimization_type, t=(i+1)*(ii+1));
+
+        costs.append(cost);
+        print("Cost for training at iteration %i is: %.05f, learning rate: %.05f" % (ii, cost, alpha));
     return costs, "", parameters
 
 
@@ -397,7 +401,7 @@ def main():
                                                        validation_label,
                                                        net_dims, \
                                                        num_iterations=num_iterations, learning_rate=learning_rate,
-                                                       batch_size=x);
+                                                       batch_size=x, descent_optimization_type=gdo_opt);
             toc = time.time();
             print("For batch size : " + str(x) + "time taken was :" + str(toc - tic));
             costsList[x] = costs;
@@ -424,7 +428,7 @@ def main():
             UF.getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_data, validation_label,
                                              parameters);
 
-    UF.plotWithCosts(num_iterations, costsList, True, net_dims);
+    UF.plotWithCosts(num_iterations, costsList, is_batch_comparision, net_dims);
 
 
 if __name__ == "__main__":
