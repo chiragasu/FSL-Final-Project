@@ -316,7 +316,6 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
         # and evalute till AL
         # keep hold of cache to be used later in backpropagation step
         X , Y = UF.unison_shuffled_copies(X.T, Y.T);
-        cost = classify(X, parameters, Y)[1];
         for i in range(0, len(A0.T), batch_size):
             # print("batch " + str(i));
             if i + batch_size >= len(X.T):
@@ -325,6 +324,7 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
             else:
                 batch_data = X.T[i:i + batch_size].T
                 batch_label = Y.T[i:i + batch_size].T
+            cost = classify(batch_data, parameters, batch_label)[1];
             AL, caches = multi_layer_forward(batch_data, parameters);
             AS, cache, loss = AFD.softmax_cross_entropy_loss(AL, batch_label);
             dZ = AFD.softmax_cross_entropy_loss_der(batch_label, cache);
@@ -337,8 +337,7 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
             parameters, alpha = update_parameters(parameters, gradients, ii, learning_rate, decay_rate,
                                                   momentumParams=momentumparams,
                                                   descent_optimization_type=descent_optimization_type, t=(i+1)*(ii+1));
-
-        costs.append(cost);
+            costs.append(cost);
         print("Cost for training at iteration %i is: %.05f, learning rate: %.05f" % (ii, cost, alpha));
     return costs, "", parameters
 
@@ -379,7 +378,7 @@ def main():
 
     # initialize learning rate and num_iterations
     learning_rate = 0.1;
-    num_iterations = 100;
+    num_iterations = 50;
 
     train_data_act, train_label_act = UF.unison_shuffled_copies(train_data_act.T, train_label_act.T);
 

@@ -42,16 +42,19 @@ def getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_da
     print("Accuracy for validation set is {0:0.3f} %".format(valAcc));
 
 
-def plotWithCosts(num_iterations, costList, is_batch_comparision=True, net_dims=[]):
+def plotWithCosts(num_iterations, costList, is_batch_comparision=True, net_dims=[], batch_size=5000, total_size=5000):
     # PLOT of costs vs iterations
     # here plot our results where our x axis would be the 1 to no. of iteration with interval of 10
     # y axis would be costs list for training and validation set
 
-    iterations = [i for i in range(0, num_iterations, 1)];
+    presionSize = 1/(total_size/batch_size);
+    iterations = [i for i in np.arange(0, num_iterations, presionSize)];
     for key in costList:
         label = "";
         if is_batch_comparision:
             label = "Batch size of " + str(key);
+            presionSize = 1 / (total_size / key);
+            iterations = [i for i in np.arange(0, num_iterations, presionSize)];
         else:
             label = desent_optimzation_map[key];
         plt.plot(iterations, costList[key], label=label);
