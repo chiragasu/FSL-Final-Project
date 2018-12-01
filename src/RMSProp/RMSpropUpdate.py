@@ -1,7 +1,10 @@
-
+import numpy as np;
 
 beta = 0.9;
-def rmsPropUpdateParams(mW, mb, dW, db):
-    mW = beta * mW + (1 - beta) * dW * dW;
-    mb = beta * mb + (1 - beta) * db * db;
-    return mW, mb;
+eps = 1e-8;
+def rmsPropUpdateParams(vW, vb, dW, db):
+    vW = beta * vW + (1 - beta) * dW * dW;
+    vb = beta * vb + (1 - beta) * db * db;
+    newUW = dW / np.sqrt(vW) + eps;
+    newUb = db / np.sqrt(vb) + eps;
+    return newUW, newUb, vW, vb;

@@ -272,17 +272,19 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 3:
-            dw_update, db_update = AU.adamUpdateParams(momentumParams["mtw" + str(l)],
+            dw_update, db_update, mW, mb, vW, vb = AU.adamUpdateParams(momentumParams["mtw" + str(l)],
                                                        momentumParams["mtb" + str(l)],
                                                        dw_update, db_update);
-            momentumParams["mtw" + str(l)] = dw_update;
-            momentumParams["mtw" + str(l)] = db_update;
+            momentumParams["mtw" + str(l)] = mW;
+            momentumParams["mtw" + str(l)] = mb;
+            momentumParams["vtw" + str(l)] = vW;
+            momentumParams["vtb" + str(l)] = vb;
         elif descent_optimization_type == 4:
-            dw_update, db_update = RPU.rmsPropUpdateParams(momentumParams["mtw" + str(l)],
-                                                           momentumParams["mtb" + str(l)],
+            dw_update, db_update, vW, vb = RPU.rmsPropUpdateParams(momentumParams["vtw" + str(l)],
+                                                           momentumParams["vtb" + str(l)],
                                                            dw_update, db_update);
-            momentumParams["mtw" + str(l)] = dw_update;
-            momentumParams["mtw" + str(l)] = db_update;
+            momentumParams["vtw" + str(l)] = vW;
+            momentumParams["vtb" + str(l)] = vb;
         parameters["W" + str(l)] = parameters["W" + str(l)] - alpha * dw_update;
         parameters["b" + str(l)] = parameters["b" + str(l)] - alpha * db_update;
     return parameters, alpha;
