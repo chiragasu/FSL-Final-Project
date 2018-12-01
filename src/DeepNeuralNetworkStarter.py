@@ -272,17 +272,19 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 3:
-            dw_update, db_update, mW, mb, vW, vb = AU.adamUpdateParams(momentumParams["mtw" + str(l)],
-                                                       momentumParams["mtb" + str(l)],
-                                                       dw_update, db_update);
+            dw_update, db_update, mW, mb, vW, vb = AU.adamUpdateParams(momentumParams["vtw" + str(l)],
+                                                                       momentumParams["vtb" + str(l)],
+                                                                       momentumParams["mtw" + str(l)],
+                                                                       momentumParams["mtb" + str(l)],
+                                                                       dw_update, db_update, t);
             momentumParams["mtw" + str(l)] = mW;
             momentumParams["mtw" + str(l)] = mb;
             momentumParams["vtw" + str(l)] = vW;
             momentumParams["vtb" + str(l)] = vb;
         elif descent_optimization_type == 4:
             dw_update, db_update, vW, vb = RPU.rmsPropUpdateParams(momentumParams["vtw" + str(l)],
-                                                           momentumParams["vtb" + str(l)],
-                                                           dw_update, db_update);
+                                                                   momentumParams["vtb" + str(l)],
+                                                                   dw_update, db_update);
             momentumParams["vtw" + str(l)] = vW;
             momentumParams["vtb" + str(l)] = vb;
         parameters["W" + str(l)] = parameters["W" + str(l)] - alpha * dw_update;
@@ -317,7 +319,7 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
         # This consists for starting from Ao i.e X
         # and evalute till AL
         # keep hold of cache to be used later in backpropagation step
-        X , Y = UF.unison_shuffled_copies(X.T, Y.T);
+        X, Y = UF.unison_shuffled_copies(X.T, Y.T);
         for i in range(0, len(A0.T), batch_size):
             # print("batch " + str(i));
             if i + batch_size >= len(X.T):
@@ -338,7 +340,8 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
             gradients = multi_layer_backward(dZ, caches, parameters);
             parameters, alpha = update_parameters(parameters, gradients, ii, learning_rate, decay_rate,
                                                   momentumParams=momentumparams,
-                                                  descent_optimization_type=descent_optimization_type, t=(i+1)*(ii+1));
+                                                  descent_optimization_type=descent_optimization_type,
+                                                  t=(i + 1) * (ii + 1));
             costs.append(cost);
         print("Cost for training at iteration %i is: %.05f, learning rate: %.05f" % (ii, cost, alpha));
     return costs, "", parameters
@@ -380,14 +383,14 @@ def main():
 
     # initialize learning rate and num_iterations
     learning_rate = 0.1;
-    num_iterations = 50;
+    num_iterations = 1;
 
     train_data_act, train_label_act = UF.unison_shuffled_copies(train_data_act.T, train_label_act.T);
 
     inp = int(input("Enter 1 for comparing Batch Sizes or 2 for Comparing GDO techniques:"));
     costsList = {};
     parametersList = {};
-
+    batch_Size = 5000;
     is_batch_comparision = True;
     if inp == 1:
         is_batch_comparision = True;
@@ -424,12 +427,13 @@ def main():
                                                        descent_optimization_type=key, batch_size=batch_Size);
             toc = time.time();
             print("For GDO : " + UF.desent_optimzation_map[key] + "time taken was :" + str(toc - tic));
-            costsList[x] = costs;
-            parametersList[x] = parameters;
+            costsList[key] = costs;
+            parametersList[key] = parameters;
             UF.getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_data, validation_label,
                                              parameters);
 
-    UF.plotWithCosts(num_iterations, costsList, is_batch_comparision, net_dims);
+
+    UF.plotWithCosts(num_iterations, costsList, is_batch_comparision, net_dims, batch_size=batch_Size);
 
 
 if __name__ == "__main__":

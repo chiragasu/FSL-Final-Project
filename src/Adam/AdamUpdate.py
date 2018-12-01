@@ -16,6 +16,6 @@ def adamUpdateParams(vW, vb, mW, mb, dW, db, t):
     vW_hat = vW / (1. - beta2 ** (t));
     vb_hat = vb / (1. - beta2 ** (t));
 
-    newUW = mW_hat / np.sqrt(vW_hat) + eps;
-    newUb = mb_hat / np.sqrt(vb_hat) + eps;
+    newUW = mW_hat / (np.sqrt(vW_hat) + eps);
+    newUb = mb_hat / (np.sqrt(vb_hat) + eps);
     return newUW, newUb, mW, mb, vW, vb;
