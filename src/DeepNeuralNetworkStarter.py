@@ -270,7 +270,8 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
     for l in range(1, L + 1):
         dw_update = gradients["dW" + str(l)];
         db_update = gradients["db" + str(l)];
-        if descent_optimization_type == 1:
+        if 
+        == 1:
             dw_update, db_update = PU.polyUpdateParams(momentumParams["mtw" + str(l)], momentumParams["mtb" + str(l)],
                                                        dw_update, db_update, t);
             momentumParams["mtw" + str(l)] = dw_update;
@@ -394,7 +395,7 @@ def main():
                   noTrPerClass=500, noTsPerClass=100);
 
     # initialize learning rate and num_iterations
-    learning_rate = 0.1;
+    learning_rate = [0.1,0.001,10];
     num_iterations = 5;
 
     train_data_act, train_label_act = UF.unison_shuffled_copies(train_data_act.T, train_label_act.T);
@@ -407,22 +408,23 @@ def main():
     if inp == 1:
         is_batch_comparision = True;
         gdo_opt = int(input("Enter the GDO type : "));
-        learning_rate = float(input("Learning rate, you want to check for: "));
+        #learning_rate = float(input("Learning rate, you want to check for: "));#commented so that we can take multiple rates
         # batch_Sizes = [1, 50, 100, 500, 5000];
         batch_Sizes = [500, 100, 5000];
-
-        for x in batch_Sizes:
-            tic = time.time();
-            costs, _, parameters = multi_layer_network(train_data_act, train_label_act, validation_data,
-                                                       validation_label,
-                                                       net_dims, \
-                                                       num_iterations=num_iterations, learning_rate=learning_rate,
-                                                       batch_size=x, descent_optimization_type=gdo_opt);
-            toc = time.time();
-            print("For batch size : " + str(x) + "time taken was :" + str(toc - tic));
-            costsList[x] = costs;
-            parametersList[x] = parameters;
-            UF.getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_data, validation_label,
+        
+        for rates in learning_rate:
+            for x in batch_Sizes:
+                tic = time.time();
+                costs, _, parameters = multi_layer_network(train_data_act, train_label_act, validation_data,
+                                                        validation_label,
+                                                        net_dims, \
+                                                        num_iterations=num_iterations, learning_rate=rates,
+                                                        batch_size=x, descent_optimization_type=gdo_opt);
+                toc = time.time();
+                print("For batch size : " + str(x) + "time taken was :" + str(toc - tic));
+                costsList[x] = costs;
+                parametersList[x] = parameters;
+                UF.getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_data, validation_label,
                                              parameters);
 
     if inp == 2:
