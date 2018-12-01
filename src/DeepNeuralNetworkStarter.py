@@ -18,6 +18,7 @@ from src.Nestrov import NestrovUpdate as NU;
 from src.RMSProp import RMSpropUpdate as RPU;
 
 no_of_digits = 10;
+gamma = .9
 
 
 def initialize_multilayer_weights(net_dims):
@@ -251,8 +252,8 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
         decay_rate - rate of decay of step size - not necessary - in case you want to use
     '''
     # epoch = 1;
-    # alpha = learning_rate * (1 / (1 + decay_rate * epoch));
-    alpha = learning_rate;
+    alpha = learning_rate * (1 / (1 + decay_rate * epoch));
+    #alpha = learning_rate;
     L = len(parameters) // 2
     # Once the required slopes of W and b are found the update
     # we update the value W and b and continue till the required iterations are completed
@@ -266,11 +267,13 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
             momentumParams["mtw" + str(l)] = dw_update;
             momentumParams["mtw" + str(l)] = db_update;
         elif descent_optimization_type == 2:
-            dw_update, db_update = NU.NestrovUpdateParams(momentumParams["mtw" + str(l)],
-                                                          momentumParams["mtb" + str(l)],
+            dw_update, db_update = NU.NestrovUpdateParams(momentumParams["vtw" + str(l)],
+                                                          momentumParams["vtb" + str(l)],
                                                           dw_update, db_update);
-            momentumParams["mtw" + str(l)] = dw_update;
-            momentumParams["mtw" + str(l)] = db_update;
+            momentumParams["vtw" + str(l)] = dw_update;
+            momentumParams["vtb" + str(l)] = db_update;
+            parameters["W" + str(l)] = parameters["W" + str(l)] + gamma*momentumParams["vtw" + str(l)];
+            parameters["b" + str(l)] = parameters["b" + str(l)] + gamma*momentumParams["vtb" + str(l)];
         elif descent_optimization_type == 3:
             dw_update, db_update, mW, mb, vW, vb = AU.adamUpdateParams(momentumParams["vtw" + str(l)],
                                                                        momentumParams["vtb" + str(l)],
@@ -383,7 +386,7 @@ def main():
 
     # initialize learning rate and num_iterations
     learning_rate = 0.1;
-    num_iterations = 1;
+    num_iterations = 50;
 
     train_data_act, train_label_act = UF.unison_shuffled_copies(train_data_act.T, train_label_act.T);
 
