@@ -21,6 +21,15 @@ no_of_digits = 10;
 gamma = .9
 
 
+def updateWAndB(parameters, momentumParams):
+
+    L = len(parameters) // 2;
+    # Once the required slopes of W and b are found the update
+    # we update the value W and b and continue till the required iterations are completed
+    for l in range(1, L + 1):
+        parameters["W" + str(l)] = parameters["W" + str(l)] - gamma * momentumParams["vtw" + str(l)];
+        parameters["b" + str(l)] = parameters["b" + str(l)] - gamma * momentumParams["vtb" + str(l)];
+
 def initialize_multilayer_weights(net_dims):
     '''
     Initializes the weights of the multilayer network
@@ -254,7 +263,7 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
     # epoch = 1;
     alpha = learning_rate * (1 / (1 + decay_rate * epoch));
     #alpha = learning_rate;
-    L = len(parameters) // 2
+    L = len(parameters) // 2;
     # Once the required slopes of W and b are found the update
     # we update the value W and b and continue till the required iterations are completed
 
@@ -272,8 +281,6 @@ def update_parameters(parameters, gradients, epoch, learning_rate, decay_rate=0.
                                                           dw_update, db_update);
             momentumParams["vtw" + str(l)] = dw_update;
             momentumParams["vtb" + str(l)] = db_update;
-            parameters["W" + str(l)] = parameters["W" + str(l)] + gamma*momentumParams["vtw" + str(l)];
-            parameters["b" + str(l)] = parameters["b" + str(l)] + gamma*momentumParams["vtb" + str(l)];
         elif descent_optimization_type == 3:
             dw_update, db_update, mW, mb, vW, vb = AU.adamUpdateParams(momentumParams["vtw" + str(l)],
                                                                        momentumParams["vtb" + str(l)],
@@ -331,6 +338,8 @@ def multi_layer_network(X, Y, validation_data, validation_label, net_dims, num_i
             else:
                 batch_data = X.T[i:i + batch_size].T
                 batch_label = Y.T[i:i + batch_size].T
+            if descent_optimization_type == 2:
+                updateWAndB(parameters, momentumparams);
             cost = classify(batch_data, parameters, batch_label)[1];
             AL, caches = multi_layer_forward(batch_data, parameters);
             AS, cache, loss = AFD.softmax_cross_entropy_loss(AL, batch_label);
@@ -386,7 +395,7 @@ def main():
 
     # initialize learning rate and num_iterations
     learning_rate = 0.1;
-    num_iterations = 50;
+    num_iterations = 5;
 
     train_data_act, train_label_act = UF.unison_shuffled_copies(train_data_act.T, train_label_act.T);
 
