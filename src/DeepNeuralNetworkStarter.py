@@ -413,7 +413,7 @@ def main():
     if inp == 2:
         is_batch_comparision = False;
         batch_Size = int(input("Enter the Batch Size you want to test for : "));
-        learning_rate = float(input("Learning rate, you want to check for: "));
+        learning_rate = float(input("Learning rate, you want to check for : "));
 
         for key in UF.desent_optimzation_map:
             tic = time.time();
@@ -422,8 +422,8 @@ def main():
                                                        net_dims, \
                                                        num_iterations=num_iterations, learning_rate=learning_rate,
                                                        descent_optimization_type=key, batch_size=batch_Size);
-            print("For GDO : " + UF.desent_optimzation_map[key] + "time taken was :" + str(toc - tic));
             toc = time.time();
+            print("For GDO : " + UF.desent_optimzation_map[key] + "time taken was :" + str(toc - tic));
             costsList[x] = costs;
             parametersList[x] = parameters;
             UF.getTrainAndValidationAccuracy(train_data_act, train_label_act, validation_data, validation_label,
